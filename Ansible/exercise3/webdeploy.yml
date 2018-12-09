@@ -1,0 +1,17 @@
+- name: Conditions in Ansible
+  hosts: zone1
+  become: yes
+  tasks:
+
+    - name: Install httpd on CENTOS
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install httpd on Ubuntu
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+     

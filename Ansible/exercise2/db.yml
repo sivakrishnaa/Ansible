@@ -1,0 +1,26 @@
+- name: Deploys mysqldb
+  hosts: dbgrp
+  become: yes
+  tasks:
+    - name: Install mysql-server
+      yum:
+       name: mariadb-server
+       state: present
+
+    - name: start and enable mysql
+      service:
+       name: mariadb.service 
+       pattern: /usr/lib/systemd/system/mariadb.service
+       state: started
+
+    - name: Create a new database with name 'sivadata'
+      mysql_db:
+       name: sivadata
+       state: present    
+
+    - name: Create a admin user for mysql_user 
+      mysql_user:
+       name: bob
+       password: 12345
+       priv: '*.*:ALL'
+       state: present
