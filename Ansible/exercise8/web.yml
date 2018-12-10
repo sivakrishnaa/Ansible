@@ -1,0 +1,58 @@
+- name: Web build
+  hosts: all
+  become: yes
+
+  tasks:
+   - name: remove the Apache package
+     yum:
+       name: httpd
+       state: absent
+     when: ansible_os_family == "RedHat"
+      
+   - yum:
+      name: httpd
+      state: present
+     when: ansible_os_family == "RedHat"
+   - debug:
+       msg: httpd installed on "{{ansible_os_family}}" 
+   - yum:
+      name: python2
+      state: present
+     when: ansible_os_family == "RedHat"
+
+
+   - service:
+       name: httpd 
+       state: started
+     when: ansible_os_family == "RedHat"
+   
+   - debug: 
+       msg: Server belongs to "{{ansible_os_family}}" family
+
+   - apt:
+      name: apache2
+      state: present
+     when: ansible_os_family == "Debian"
+   
+   - debug:
+       msg: apache2 installed on "{{ansible_os_family}}" 
+   
+
+   - service:
+       name: apache2
+       state: started
+     when: ansible_os_family == "Debian"
+  
+   - debug: 
+       msg: Server belongs to "{{ansible_os_family}}" family
+  
+  handlers:
+   - name: Restart Apache
+     service:
+       name: httpd
+       state: restarted
+  
+   - name: Restart Apache
+     service:
+       name: apache2
+       state: restarted
