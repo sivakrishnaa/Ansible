@@ -1,0 +1,51 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: create a new ec2 key pair, returns generated private key
+      ec2_key:
+        name: Honey_keypair
+        region: "{{region}}"
+      register: Honey_keypair
+    - debug:
+        msg: "{{Honey_keypair}}"
+    - copy:
+        content: "{{Honey_keypair.key.private_key}}\n"
+        dest: "./Honeykey.pem"
+        mode: 0400
+      when: Honey_keypair.changed
+
+    - name: create a VPC Honey VPC
+      ec2_vpc_net:
+        name: Honey_VPC
+        cidr_block: 10.0.0.0/16
+        region: "{{region}}"
+        resource_tags: {"Name":"Honey_VPC",}
+    
+    - name: create IGW
+      ec2_vpc_igw:
+        vpc_id: vpc-09e6587fd43ce4809
+        region: "{{region}}"
+
+    - name: Create subnet for Honey VPC
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: vpc-09e6587fd43ce4809
+        cidr: 10.0.1.0/24
+        region: "{{region}}"
+        resource_tags: {"Environment":"Dev", "owner":"Honey"}
+      internet_gateway: True
+
+    - name: Create EC2 Instance
+      ec2:
+        key_name: Honey_keypair
+        instance_type:  t2.micro
+        region: "{{region}}"
+        image: ami-009d6802948d06e52 
+        exact_count: 1
+        count_tag:
+          name: "Honeyinst"
+          owner: "Honey"
+        vpc_subnet_id: subnet-0b79345bb773430ea
+        assign_public_ip: true

@@ -1,0 +1,25 @@
+- name: setup wordpress
+  hosts: all
+  become: yes
+  vars:
+    wordpress_file: "/home/{{ansible_user}}/Downloads/wordpress-latest.zip"
+    wordpress_dest: "/var/www/html"
+
+  tasks:
+#  - apt:
+#    update_cache: yes
+#  - mysql_db:
+##      name: wordpress
+#      state: present
+
+    - yum: name={{item}} state=present
+      with_items:
+       - mysql-devel
+       - gcc
+       - python-devel
+       - MySQL-python
+
+    - name: Install MySQL-Python  module
+      pip: name=MySQL-python
+
+  

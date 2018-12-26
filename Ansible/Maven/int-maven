@@ -1,0 +1,5 @@
+mysql ansible_ssh_host=192.168.33.24 ansible_ssh_user=mavenuser
+memcache ansible_ssh_host=192.168.33.23 ansible_ssh_user=mavenuser
+rabbitmq ansible_ssh_host=192.168.33.22 ansible_ssh_user=mavenuser
+tomcat ansible_ssh_host=192.168.33.21 ansible_ssh_user=mavenuser
+nginx ansible_ssh_host=192.168.33.20 ansible_ssh_user=mavenuser
