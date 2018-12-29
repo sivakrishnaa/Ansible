@@ -7,7 +7,9 @@
       ec2_key:
         name: krishna.key
         region: "{{region}}"
-      register: krishna.key
+      register: krishnakey
+    - debug:
+        msg: "{{krishnakey}}"
 
     - name: create a KrishnaVPC
       ec2_vpc_net:
@@ -95,24 +97,42 @@
            from_port: 22
            to_port: 22
            cidr_ip: 0.0.0.0/0
+         
+         - proto: tcp
+           from_port: 3306
+           to_port: 3306
+           cidr_ip: 0.0.0.0/0
+
       register: krishna_sg
 
     - debug:
         msg: "{{krishna_sg}}"
         msg: "{{krishna_sg.group_id}}"
 
-    - name: Launch Krishna ec2
+    
+    - name: Creating All instance
       ec2:
         key_name: krishna.key
         region: "{{region}}"
         vpc_subnet_id: "{{ krishna_subnet.subnet.id }}"
+        assign_public_ip: yes
         instance_type: t2.micro
         image: ami-009d6802948d06e52
-        exact_count: 1
-        count_tag:
-          name: "krishna"
+      exact_count: 1
+      count_tag:
+      with_items: 
+        - name: Nginx01
+        - name: Nginx02
       register: krishna_info
+    
+    - debug:
+        msg: "{{krishna_info}}"
+    
+    - elb_target_group:
+        target_group_name: krishnatargetgroup
+        target_id: "{{krishna_info.results.instance_ids}}"
+        state: present
+      register: krishnatarget
 
     - debug:
-        msg: "{{krishna_info}}"    
-       
+        msg: "{{krishnatarget}}"

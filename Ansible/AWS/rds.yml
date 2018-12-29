@@ -1,0 +1,30 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: create a new keypair
+      ec2_key:
+        name: krishna.key
+        region: "{{region}}"
+      register: krishnakey
+    - debug:
+        msg: "{{krishnakey}}"
+
+    - rds:
+        command: create
+        instance_name: krishna-mysql
+        db_engine: MySQL
+        region: "{{region}}"
+        size: 20
+        instance_type: db.t2.micro
+        db_name: accounts
+        username: "{{dbuser}}"
+        password: "{{dbpass}}"
+        tags:
+          Environment: Prod
+          Application: Vprofile
+      register: vpro_rds
+
+    - debug:
+        msg: "{{vpro_rds}}"

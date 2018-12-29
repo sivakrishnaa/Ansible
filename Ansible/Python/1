@@ -1,7 +1,0 @@
-#!/usr/bin/python
-
-from fabric.api import *
-env.user='devops'
-
-def greet(msg="World"):
-  print "Good Morning ", msg
