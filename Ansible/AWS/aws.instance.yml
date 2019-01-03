@@ -122,9 +122,7 @@
       count_tag:
       with_items: 
         - name: Nginx01
-        - name: Nginx02
         - name: Tomcat01
-        - name: Tomcat02
         - name: RMQ01
         - name: MC01
       register: krishna_info
@@ -137,26 +135,9 @@
        name: httpd
        state: latest
        with_items:
-          - name: Nginx01
-          - name: Nginx02
           - name: Tomcat01
-          - name: Tomcat02
-          - name: RMQ01
-          - name: MC01
        register: pkg_installed 
 
     - debug:
         msg: "{{pkg_installed}}"    
 
-    - rds:
-       command: create
-       instance_name: krishna-database
-       db_engine: MySQL
-       size: 10
-       instance_type: db.t2.micro
-       region: "{{region}}"
-       username: krishna
-       password: Password
-       tags:
-         Environment: testing
-         Application: cms
