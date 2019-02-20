@@ -1,0 +1,19 @@
+- name: Learning printing variable values
+  hosts: localhost
+  become: yes
+  vars_prompt:
+   - name: "package"
+     prompt: "enter pkg name"
+     private: no
+  tasks:
+
+    - debug:
+        msg: "The OS is {{ansible_architecture}}"
+
+    - name: upgrade all packages
+      yum:
+       name: "{{package}}" 
+       state: latest
+      register: output
+    - debug:
+        msg: "{{output}}"

@@ -1,0 +1,26 @@
+- name: Learning printing variable values
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - debug:
+        msg: "The OS is {{ansible_os_family}}"
+
+    - name: Install git
+      yum:
+        name: "{{item}}"
+        state: present
+      with_items:
+           - git
+           - wget 
+      when: ansible_os_family == "RedHat" 
+
+    - name: Install git
+      apt:
+         name: "{{item}}"
+         state: present
+      with_items:
+           - git
+           - wget 
+      when: ansible_os_family == "Debian"  
+ 
