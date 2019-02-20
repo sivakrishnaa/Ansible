@@ -1,0 +1,11 @@
+- name: Learning variable priority through user module
+  hosts: all
+  become: yes
+  vars:
+    usrnm: playvar
+    comm: "var defined in playbook"
+  tasks:
+   - name: Add the user from variable file
+     user:
+      name: "{{usrnm}}"
+      comment: "{{comm}}"

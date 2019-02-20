@@ -1,0 +1,20 @@
+- name: Playbook for web deployment
+  hosts: webgrp
+  become: yes
+  tasks: 
+    - name: Install HTTPD on centos
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start & Enable httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    
+    - name: Deploy web files
+      copy:
+        src: files/index.html
+        dest: /var/www/html
+        owner: root

@@ -1,0 +1,91 @@
+- name: project build using Ansible
+  hosts: all
+  become: yes
+  tasks:
+   - name: shell command
+     shell: yum -y update
+     
+   - name: ensure a list of packages installed
+     yum:
+       name: "{{ packages }}"
+     vars:
+       packages:
+       - epel-release
+       - mariadb-server 
+     when: ansible_nodename == "mysql"
+ 
+   - name: shell command
+     shell: yum -y update
+     when: ansible_nodename == "mysql"
+
+   - name: ensure a list of packages installed
+     yum:
+       name: "{{ packages }}"
+     vars:
+       packages:
+#       - epel-release 
+       - memcached 
+     when: ansible_nodename == "memcache"
+  
+   - name: Start service memcached, if not started
+     service:
+       name: memcached
+       state: started
+       enabled: yes
+     when: ansible_nodename == "memcache"
+
+   - name: Execute the command in remote shell;  
+     shell: memcached -p 11211 -U 11111 -u memcached -d
+     when: ansible_nodename == "memcache"
+
+  
+   - name: ensure a list of packages installed
+     yum:
+       name: "{{ packages }}"
+     vars:
+       packages:
+#       - epel-release
+       - socat
+#       - erlang
+       - wget      
+     when: ansible_nodename == "rabbitmq"
+
+   - name: Execute the command in remote shell;  
+     shell: wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.10/rabbitmq-server-3.6.10-1.el7.noarch.rpm
+     shell: rpm --import https://www.rabbitmq.com/rabbitmq-release-signing-key.asc
+     shell: yum update
+     shell: rpm -Uvh rabbitmq-server-3.6.10-1.el7.noarch.rpm
+     when: ansible_nodename == "rabbitmq"  
+  
+   - name: Start service rabbitmq, if not started
+     service:
+       name: rabbitmq
+       state: started
+       enabled: yes
+     when: ansible_nodename == "rabbitmq"
+  
+   - name: Execute the command in remote shell; 
+     shell: echo "[{rabbit, [{loopback_users, []}]}]."> /etc/rabbitmq/rabbitmq.config
+     shell: rabbitmqctl add_user test test
+     shell: rabbitmqctl set_user_tags test administrator
+     shell: systemctl restart rabbitmq-server
+     when: ansible_nodename == "rabbitmq"
+  
+  
+   - name: ensure a list of packages installed
+     yum:
+       name: "{{ packages }}"
+     vars:
+       packages:
+#       - epel-release 
+       - tomcat    
+     when: ansible_nodename == "tomcat"
+  
+   - name: ensure a list of packages installed
+     yum:
+       name: "{{ packages }}"
+     vars:
+       packages:
+#       - epel-release 
+#       - nginx     
+     when: ansible_nodename == "nginx"

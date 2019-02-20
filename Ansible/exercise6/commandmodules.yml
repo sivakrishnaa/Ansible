@@ -1,0 +1,21 @@
+- name: Learning command modules and storing output
+  hosts: all
+  become: yes
+  tasks:
+#   - name: example copying file with owner and permissions
+#     copy:
+#      src: files/motd
+#      dest: /etc/motd
+   
+    - name: example copying file with owner and permissions
+      copy:
+       content: "This server is managed by Ansible. Don't try to make any changes"
+       dest: /etc/motd
+
+
+    - name: return motd to registered var
+      command: cat /etc/motd
+      register: mymotd
+
+    - debug:
+       msg: "The banner is {{mymotd.stdout}}"

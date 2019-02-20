@@ -1,0 +1,14 @@
+- name: Learning printing variable
+  hosts: all
+  become: yes
+#   vars:
+#     usrnm: "krishna"
+  tasks:
+    - debug:
+        msg: "valur of usrnm variable is {{usrnm}}"
+
+    - debug:
+        msg: " The os is {{ansible_os_family}}"
+
+    - debug:
+        msg: "Node name {{ansible_nodename}}"

@@ -1,0 +1,143 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  become: yes 
+  tasks:
+    - name: create a new keypair 
+      ec2_key:
+        name: krishna.key
+        region: "{{region}}"
+      register: krishnakey
+    - debug:
+        msg: "{{krishnakey}}"
+
+    - name: create a KrishnaVPC
+      ec2_vpc_net:
+        name: KrishnaVPC
+        cidr_block: 10.0.0.0/16
+        region: "{{region}}"
+      register: KrishnaVPC
+    - debug:
+        msg: "{{KrishnaVPC.vpc.id}}" 
+
+    - name: create Krishna IGW
+      ec2_vpc_igw:
+        vpc_id: "{{KrishnaVPC.vpc.id}}"
+        region: "{{region}}"
+        state: present
+      register: igw
+    - debug:
+        msg: "{{igw}}"
+
+    - name: Create subnet for Krishna servers
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{KrishnaVPC.vpc.id}}"
+        region: "{{region}}"
+        cidr: 10.0.1.16/24
+        resource_tags:
+          Name: Krishna Subnet
+      register: krishna_subnet
+   
+    - debug:
+        msg: "{{krishna_subnet}}"
+
+    - name: get my public IP
+      ipify_facts:
+      register: myip
+
+    - debug:
+        msg: "{{myip}}"
+        msg: "{{myip.ansible_facts.ipify_public_ip}}"
+
+    - name: Set up public subnet route table
+      ec2_vpc_route_table:
+        vpc_id: "{{KrishnaVPC.vpc.id}}"
+        region: "{{region}}"
+        tags:
+          Name: Public
+      subnets:
+        - "{{ krishna_subnet.subnet.id }}"
+      routes:
+        - dest: 0.0.0.0/0
+          gateway_id: "{{ igw.gateway_id }}"
+      register: public_route_table
+   
+    - debug:
+       msg: "{{public_route_table}}" 
+
+    - name: Set up private subnet route table
+      ec2_vpc_route_table:
+         vpc_id: "{{KrishnaVPC.vpc.id}}"
+         region: "{{region}}"
+         tags:
+           Name: Private 
+      subnets:
+        - "{{ krishna_subnet.subnet.id }}"
+      routes:
+        - dest: "{{myip.ansible_facts.ipify_public_ip}}" 
+          gateway_id: "{{ igw.gateway_id }}"
+      register: private_route_table
+    
+    - debug:
+        msg: "{{private_route_table}}"
+
+    - name: krishna ec2 group
+      ec2_group:
+        name: krishna_sg
+        description: krishna EC2 group
+        vpc_id:  "{{KrishnaVPC.vpc.id}}"
+        region: "{{region}}"
+        rules:
+         - proto: tcp
+           from_port: 80
+           to_port: 80
+           cidr_ip: 0.0.0.0/0
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: 0.0.0.0/0
+         
+         - proto: tcp
+           from_port: 3306
+           to_port: 3306
+           cidr_ip: 0.0.0.0/0
+
+      register: krishna_sg
+
+    - debug:
+        msg: "{{krishna_sg}}"
+        msg: "{{krishna_sg.group_id}}"
+
+    
+    - name: Creating All instance
+      ec2:
+        key_name: krishna.key
+        region: "{{region}}"
+        vpc_subnet_id: "{{ krishna_subnet.subnet.id }}"
+        assign_public_ip: yes
+        instance_type: t2.micro
+        image: ami-009d6802948d06e52
+      exact_count: 1
+      count_tag:
+      with_items: 
+        - name: Nginx01
+        - name: Tomcat01
+        - name: RMQ01
+        - name: MC01
+      register: krishna_info
+    
+    - debug:
+        msg: "{{krishna_info}}"
+
+    - name: install the latest version of Apache
+      yum:
+       name: httpd
+       state: latest
+       with_items:
+          - name: Tomcat01
+       register: pkg_installed 
+
+    - debug:
+        msg: "{{pkg_installed}}"    
+

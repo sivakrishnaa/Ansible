@@ -1,0 +1,48 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: create a new keypair
+      ec2_key:
+        name: krishna.key
+        region: "{{region}}"
+      register: krishnakey
+    - debug:
+        msg: "{{krishnakey}}"
+
+    - elb_classic_lb:
+        name: "krishna-elb"
+        scheme: internet-facing
+        state: present
+        region: "{{region}}"
+        instance_ids:
+          -  i-0210b9cf3436bfd11
+          -  i-0723b07d745bf1cfe
+        purge_instance_ids: true
+        subnets:
+          - subnet-006a6f2929a326c40
+  
+        listeners:
+          - protocol: http # options are http, https, ssl, tcp
+            load_balancer_port: 80
+            instance_port: 80
+      register: krishnaelb 
+    - debug:
+        msg: "{{krishnaelb}}"
+
+    - name: creating target group
+      local_action:
+        module: elb_target_group
+        region: "{{region}}"
+        vpc_id: vpc-030ace14dd7f43208
+        name: krishnatarget
+        protocol: http
+        health_check_path: /
+        successful_response_codes: "200,250-260"
+        state: present
+        targets:
+          - Id: i-0210b9cf3436bfd11
+          - Id: i-0723b07d745bf1cfe          
+        wait_timeout: 200
+      register: tgp

@@ -1,0 +1,23 @@
+- name: Playbook for web deployment
+  hosts: all
+  become: yes
+  tasks: 
+    - name: Upgrade all packages to the latest version
+      apt:
+        name: "*"
+        state: latest
+
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+
+    - name: Install git on centos
+      when: ansible_os_family == "debian"
+      apt:
+        name: "{{ packages}}"
+      vars:
+        packages:
+        - python2
+        - git
+        state: present
+

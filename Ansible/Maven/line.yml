@@ -1,0 +1,11 @@
+- name: selinux
+  hosts: all
+  become: yes
+  tasks:
+
+   - lineinfile:
+      path: /etc/selinux/config
+      regexp: '^SELINUX='
+      line: 'SELINUX=disabled'
+
+   - shell: init 6

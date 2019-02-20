@@ -1,0 +1,26 @@
+websrv01 ansible_ssh_host=192.168.33.10 
+dbsrv01 ansible_ssh_host=192.168.33.11
+testsrv01 ansible_ssh_host=192.168.33.12
+
+[webgrp]
+websrv01
+[webgrp:vars]
+#ansible_ssh_user=devops
+
+[dbgrp]
+dbsrv01
+[dbgrp:vars]
+#ansible_ssh_user=devops
+
+[testgrp]
+testsrv01
+[testgrp:vars]
+#ansible_ssh_user=devops
+
+
+[zone1:children]
+webgrp
+dbgrp
+testgrp
+#[zone1:vars]
+#ansible_ssh_user=devops
